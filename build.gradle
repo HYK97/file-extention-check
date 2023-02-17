@@ -23,6 +23,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:0.4.12'
+	testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-jackson:0.4.12'
 }
 
 tasks.named('test') {
