@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+            integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<style>
+    .tagify {
+        --tags-border-color: #FFFFFF;
+        --tag-bg: #f1d3f1;
+        --tags-hover-border-color: #FFFFFF;
+        --tags-focus-border-color: #FFFFFF;
+    }
+
+</style>
+<div class="container py-3">
+
+    <header>
+        <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
+            <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                <span class="fs-4">파일 확장자 차단</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="row row-cols-1 row-cols-md-3 mb-3">
+        <div class="col-md-2">
+            <label> 고정 확장자 </label>
+        </div>
+        <div class="col-md-5">
+            <div class="mb-3 d-grid gap-2" style="grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));">
+                <span th:each="fixedExtension : ${fixedExtensions}">
+                    <input name="fixed_check_box" type="checkbox" class="form-check-input" th:value="${fixedExtension}"
+                           th:id="${fixedExtension}">
+                    <label class="form-check-label" th:for="${fixedExtension}" th:text="${fixedExtension}"></label>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            <label for="customExtensionInput">커스텀 확장자</label>
+        </div>
+        <div class="col-md-6">
+
+            <div class="mb-3 ">
+                <input type="text" id="customExtensionInput" style="width: 60%">
+                <button type="button" id="addButton" class="btn btn-primary">추가 +</button>
+                <button type="button" id="removeAllButton" class="btn btn-danger">전체삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-flex">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-6">
+            <div style="width: 100%;  border: 1px solid silver;">
+                <div>
+                    <span id="count">0</span><span>/200</span>
+                </div>
+                <div id="myTags">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@4.1.1/dist/tagify.min.js"></script>
+<script>
+
+
+    const input = document.getElementById('customExtensionInput');
+    const button = document.getElementById('addButton');
+    const tagContainer = document.getElementById('myTags');
+    const tagify = new Tagify(tagContainer, {
+        duplicates: false,
+        enforceWhitelist: true,
+        editTags: false,
+        userInput: false,
+        hooks: {
+            beforeRemoveTag: function (tags) {
+                return new Promise((resolve, reject) => {
+                    removeExtension(tags[0].data.value)
+                        ? reject()
+                        : resolve()
+                })
+
+            }
+        }
+    });
+
+    let autocomplete;
+    $(function () {
+        loading();
+        $("#customExtensionInput").autocomplete({
+            source: autocomplete,
+            maxShowItems: 5,
+            minLength: 1,
+            open: function (event, ui) {
+                $(".ui-autocomplete").css("max-height", "150px");
+                $(".ui-autocomplete").css("overflow-y", "auto");
+            }
+        });
+    });
+
+    button.addEventListener('click', onButtonClicked);
+
+    function upCount() {
+        let $count = $("#count");
+        let val = parseInt($count.text()) + 1;
+        $count.text(val)
+    }
+
+    function downCount() {
+        let $count = $("#count");
+        if (($count.text()) < 1) {
+            return;
+        }
+        let val = parseInt($count.text()) - 1;
+        $count.text(val)
+    }
+
+    $(".form-check-input").change(function () {
+        if ($(this).is(":checked")) {
+            addExtension(this.value, true);
+        } else {
+            removeExtension(this.value, true);
+        }
+    });
+
+    function onButtonClicked() {
+        const value = input.value.trim();
+        if ($("#count").text() >= 200) {
+            alert("200개 이상 추가할 수 없습니다.");
+            return;
+        }
+        if (value) {
+            addExtension(value, false);
+        } else {
+            alert("빈값을 입력할 수 없습니다.");
+        }
+    }
+
+    $("#removeAllButton").click(function () {
+        if (!confirm("전체 삭제하시겠습니까?")) {
+            return;
+        }
+        removeAllExtension(tagify.value.map(i => i.value));
+    });
+
+    const isEmpty = (input) => {
+        return input === null ||
+            input === "";
+    }
+
+    function insertTag(value) {
+        tagify.settings.whitelist = [];
+        if (Array.isArray(value)) {
+            for (const valueElement of value) {
+                tagify.settings.whitelist.push(valueElement);
+            }
+        } else {
+            tagify.settings.whitelist.push(value);
+        }
+        tagify.addTags(value);
+    }
+
+    function checkTag(value) {
+        $("input[name=fixed_check_box][value=" + value + "]").prop("checked", true);
+    }
+
+    function loading() {
+        $.ajax({
+            type: "GET",
+            url: "/api/extension",
+            success: function (response, xhr) {
+                if (xhr === "success") {
+                    $("#count").text(response.customExtensions.length);
+
+                    insertTag(response.customExtensions);
+
+                    for (const fixedExtension of response.fixedExtensions) {
+                        checkTag(fixedExtension);
+                    }
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("Error" + xhr.status);
+            }
+        });
+    }
+
+    function removeExtension(value, fixed) {
+        $.ajax({
+            type: "DELETE",
+            url: "/api/extension",
+            data: {"fileExtension": value},
+            async: false,
+            success: function (response, xhr) {
+                if (xhr === "success") {
+                    if (!fixed) {
+                        downCount();
+                    }
+                    return true;
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("error");
+            }
+        });
+        return false;
+    }
+
+    function removeAllExtension(value) {
+        $.ajax({
+            type: "DELETE",
+            url: "/api/extension/all",
+            success: function (response, xhr) {
+                if (xhr === "success") {
+                    tagify.removeAllTags();
+                    $("#count").text(0);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("error");
+            }
+        });
+    }
+
+    function addExtension(value, fixed) {
+        $.ajax({
+            type: "POST",
+            url: "/api/extension",
+            data: {"fileExtension": value},
+            async: false,
+            success: function (response, xhr) {
+                if (xhr === "success") {
+                    if (!fixed) {
+                        insertTag(value);
+                        upCount();
+                        input.value = "";
+                    }
+                }
+            },
+            error: function (xhr, status, error) {
+                if (xhr.status === 400) {
+                    alert(xhr.responseText);
+                } else {
+                    alert("error");
+                }
+            }
+        });
+    };
+
+
+</script>
+
+</body>
