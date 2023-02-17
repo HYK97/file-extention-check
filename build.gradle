@@ -25,6 +25,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:0.4.12'
 	testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-jackson:0.4.12'
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.0.3'
+	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
 }
 
 tasks.named('test') {
