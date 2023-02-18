@@ -1,15 +1,16 @@
 package com.flow.fileextensioncheck.controller.dto.response;
 
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@ToString
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseFileExtension {
-    private final List<String> fixedExtensions;
-    private final List<String> customExtensions;
+    private List<String> fixedExtensions;
+    private List<String> customExtensions;
 
     private ResponseFileExtension(List<String> fixedExtensions, List<String> customExtensions) {
         this.fixedExtensions = fixedExtensions;

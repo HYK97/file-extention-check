@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.security.SecureRandom;
 import java.util.concurrent.CountDownLatch;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 2000개 기준  15sec 992ms ~ 17s 102ms
  */
 @SpringBootTest
+@ActiveProfiles("dev")
 class DefaultFileExtensionServiceConcurrencyTest {
 
     @Autowired
