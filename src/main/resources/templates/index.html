@@ -83,7 +83,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify@4.1.1/dist/tagify.min.js"></script>
     <script>
 
-
+        const staticFileExtensions =[[${fixedExtensions}]];
         const input = document.getElementById('customExtensionInput');
         const button = document.getElementById('addButton');
         const tagContainer = document.getElementById('myTags');
@@ -265,9 +265,13 @@
                 success: function (response, xhr) {
                     if (xhr === "success") {
                         if (!fixed) {
+                            input.value = "";
+                            if (staticFileExtensions.map(i=>i.defaultValue).includes(value)) {
+                                checkTag(value);
+                                return ;
+                            }
                             insertTag(value);
                             upCount();
-                            input.value = "";
                         }
                     }
                 },
