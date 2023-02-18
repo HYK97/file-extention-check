@@ -24,6 +24,11 @@ fixed-extension:
 max-extension-count: 200
 ---
 spring:
+  redis:
+    lettuce:
+      host: ENC(YAvrUY+r8Gg9U1r8AOkfN4vkK+sw+8H/)
+      port: ENC(2j1kaflCWAE40fLInvA1Gg==)
+      password: ENC(m8Bod8U2wFT2lf5pfvF7RQ==)
   jpa:
     properties:
       hibernate:
@@ -43,6 +48,11 @@ spring:
     password: ENC(41s1mrhbplL/ZmzU0El5mw==)
 ---
 spring:
+  redis:
+    lettuce:
+      host: ENC(xc3MLylaLXT/M7uYDzG8bL33BC2LgxLDwRVZx9UnCzU=)
+      port: ENC(nUvjhidLmVIagyaOnDPoYA==)
+      password: ENC(bJNGe378uT6HZDPPKTqacw==)
   jpa:
     properties:
       hibernate:
