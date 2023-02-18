@@ -9,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 public class DefaultFileExtensionService implements FileExtensionService {
     private final FileExtensionRepository fileExtensionRepository;
     private final Lock lock = new ReentrantLock();
+    private final RedisTemplate<String, String> redisTemplate;
     @Value("${fixed-extension.list}")
     private List<String> allFixedExtensions;
     @Value("${max-extension-count}")
@@ -73,6 +77,12 @@ public class DefaultFileExtensionService implements FileExtensionService {
     @Override
     public void removeAllFileExtension() {
         fileExtensionRepository.deleteAll();
+    }
+
+    @Override
+    public Set<String> autocomplete(String word) {
+        ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
+        return ops.range("EXTENSION:" + word, 0, -1);
     }
 
 
