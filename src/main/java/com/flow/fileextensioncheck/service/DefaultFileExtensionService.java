@@ -1,24 +1,26 @@
 package com.flow.fileextensioncheck.service;
 
-import com.flow.fileextensioncheck.common.exception.DuplicateFileExtensionException;
-import com.flow.fileextensioncheck.common.exception.ExtensionCountExceededException;
-import com.flow.fileextensioncheck.controller.dto.response.ResponseFileExtension;
-import com.flow.fileextensioncheck.entity.FileExtension;
-import com.flow.fileextensioncheck.repository.FileExtensionRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.stereotype.Service;
+
+import com.flow.fileextensioncheck.common.exception.DuplicateFileExtensionException;
+import com.flow.fileextensioncheck.common.exception.ExtensionCountExceededException;
+import com.flow.fileextensioncheck.controller.dto.response.ResponseFileExtension;
+import com.flow.fileextensioncheck.entity.FileExtension;
+import com.flow.fileextensioncheck.repository.FileExtensionRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 동시성처리
@@ -47,9 +49,9 @@ public class DefaultFileExtensionService implements FileExtensionService {
 
     @Override
     public void save(String fileExtension) {
+        String lowerCaseExtension = fileExtension.toLowerCase();
         lock.lock();
         try {
-            String lowerCaseExtension = fileExtension.toLowerCase();
             int numberOfCurrentExtensions = fileExtensionRepository.countByFixedFalse();
             boolean contains = allFixedExtensions.contains(lowerCaseExtension);
             if (!contains && numberOfCurrentExtensions >= MAX_EXTENSION_COUNT) {
@@ -65,7 +67,10 @@ public class DefaultFileExtensionService implements FileExtensionService {
 
     @Override
     public ResponseFileExtension findAllFileExtension() {
-        Map<Boolean, List<String>> collect = fileExtensionRepository.findAll().stream().collect(Collectors.partitioningBy(FileExtension::isFixed, Collectors.mapping(FileExtension::getFileExtension, Collectors.toList())));
+        Map<Boolean, List<String>> collect = fileExtensionRepository.findAll()
+            .stream()
+            .collect(Collectors.partitioningBy(FileExtension::isFixed,
+                Collectors.mapping(FileExtension::getFileExtension, Collectors.toList())));
         return ResponseFileExtension.of(collect.get(true), collect.get(false));
     }
 
@@ -84,6 +89,5 @@ public class DefaultFileExtensionService implements FileExtensionService {
         ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
         return ops.range("EXTENSION:" + word, 0, -1);
     }
-
 
 }
