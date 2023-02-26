@@ -13,6 +13,5 @@
     - 서버 확장 시에도 사용 가능 (db x)
     - 2000개 기준 15sec 992ms ~ 17sec 102ms
 
-- REST API + SSR
 - 중복제거
   - DataIntegrityViolationException -> catch -> convert DuplicateFileExtensionException
